@@ -1,4 +1,4 @@
-package entities;
+package kg.alatoo.hotelbooking.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Reservation {
 
     @Id
