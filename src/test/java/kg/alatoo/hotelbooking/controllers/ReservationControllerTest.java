@@ -1,61 +1,83 @@
 package kg.alatoo.hotelbooking.controllers;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kg.alatoo.hotelbooking.dto.ReservationDTO;
 import kg.alatoo.hotelbooking.services.ReservationService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
-class ReservationControllerTest {
+@WebMvcTest(ReservationController.class)
+public class ReservationControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private ReservationService reservationService;
 
-    @InjectMocks
-    private ReservationController reservationController;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    private ReservationDTO reservationDTO;
+    @Test
+    public void testGetAllReservations() throws Exception {
+        ReservationDTO res1 = new ReservationDTO();
+        res1.setId(1L);
+        res1.setRoomId(1L);
+        res1.setCustomerName("John Doe");
+        res1.setCheckInDate(LocalDate.of(2024, 5, 1));
+        res1.setCheckOutDate(LocalDate.of(2024, 5, 5));
 
-    @BeforeEach
-    void setUp() {
-        reservationDTO = new ReservationDTO();
-        reservationDTO.setId(1L);
-        reservationDTO.setCustomerName("Test Customer");
-        reservationDTO.setCheckInDate(LocalDate.now());
-        reservationDTO.setCheckOutDate(LocalDate.now().plusDays(2));
+        ReservationDTO res2 = new ReservationDTO();
+        res2.setId(2L);
+        res2.setRoomId(2L);
+        res2.setCustomerName("Alice Smith");
+        res2.setCheckInDate(LocalDate.of(2024, 6, 10));
+        res2.setCheckOutDate(LocalDate.of(2024, 6, 15));
+
+        Mockito.when(reservationService.getAllReservations()).thenReturn(Arrays.asList(res1, res2));
+
+        mockMvc.perform(get("/api/reservations/"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].customerName").value("John Doe"))
+                .andExpect(jsonPath("$[1].id").value(2L))
+                .andExpect(jsonPath("$[1].customerName").value("Alice Smith"));
+    }
+
+    @Test
+    public void testCreateReservation() throws Exception {
+        ReservationDTO reservationDTO = new ReservationDTO();
         reservationDTO.setRoomId(1L);
-    }
+        reservationDTO.setCustomerName("Bob Marley");
+        reservationDTO.setCheckInDate(LocalDate.of(2024, 7, 1));
+        reservationDTO.setCheckOutDate(LocalDate.of(2024, 7, 5));
 
-    @Test
-    void getAllReservations_shouldReturnList() {
-        when(reservationService.findAll()).thenReturn(Collections.singletonList(reservationDTO));
+        ReservationDTO savedReservation = new ReservationDTO();
+        savedReservation.setId(3L);
+        savedReservation.setRoomId(1L);
+        savedReservation.setCustomerName("Bob Marley");
+        savedReservation.setCheckInDate(LocalDate.of(2024, 7, 1));
+        savedReservation.setCheckOutDate(LocalDate.of(2024, 7, 5));
 
-        List<ReservationDTO> result = reservationController.getAll();
+        Mockito.when(reservationService.createReservation(any(ReservationDTO.class))).thenReturn(savedReservation);
 
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Test Customer", result.get(0).getCustomerName());
-    }
-
-    @Test
-    void createReservation_shouldReturnSavedReservation() {
-        when(reservationService.save(reservationDTO)).thenReturn(reservationDTO);
-
-        ResponseEntity<ReservationDTO> response = reservationController.create(reservationDTO);
-
-        assertNotNull(response.getBody());
-        assertEquals("Test Customer", response.getBody().getCustomerName());
-        assertTrue(response.getStatusCode().is2xxSuccessful());
+        mockMvc.perform(post("/api/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reservationDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(3L))
+                .andExpect(jsonPath("$.customerName").value("Bob Marley"));
     }
 }
