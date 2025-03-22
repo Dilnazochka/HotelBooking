@@ -1,11 +1,14 @@
 package kg.alatoo.hotelbooking.mappers;
 
-
 import kg.alatoo.hotelbooking.dto.RoomDTO;
 import kg.alatoo.hotelbooking.entities.Room;
 
 public class RoomMapper {
-    public static RoomDTO toDTO(Room room) {
+
+    public static RoomDTO toDto(Room room) {
+        if (room == null) {
+            return null;
+        }
         RoomDTO dto = new RoomDTO();
         dto.setId(room.getId());
         dto.setNumber(room.getNumber());
@@ -15,11 +18,14 @@ public class RoomMapper {
     }
 
     public static Room toEntity(RoomDTO dto) {
-        return Room.builder()
-                .id(dto.getId())
-                .number(dto.getNumber())
-                .type(dto.getType())
-                .status(dto.getStatus())
-                .build();
+        if (dto == null) {
+            return null;
+        }
+        Room room = new Room();
+        room.setId(dto.getId());
+        room.setNumber(dto.getNumber());
+        room.setType(dto.getType());
+        room.setStatus(dto.getStatus());
+        return room;
     }
 }

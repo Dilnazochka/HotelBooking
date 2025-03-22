@@ -21,41 +21,49 @@ public class ReservationServiceImpl implements ReservationService {
     private final RoomRepository roomRepository;
 
     @Override
-    public List<ReservationDTO> findAll() {
-        return reservationRepository.findAll().stream()
-                .map(ReservationMapper::toDTO)
-                .collect(Collectors.toList());
+    public List<ReservationDTO> getAllReservations() {
+        List<Reservation> reservations = reservationRepository.findAll();
+        return reservations.stream().map(ReservationMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
-    public ReservationDTO findById(Long id) {
-        return reservationRepository.findById(id)
-                .map(ReservationMapper::toDTO)
-                .orElse(null);
+    public ReservationDTO getReservationById(Long id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+        return ReservationMapper.toDto(reservation);
     }
 
     @Override
-    public ReservationDTO save(ReservationDTO dto) {
-        Room room = roomRepository.findById(dto.getRoomId()).orElse(null);
-        if (room == null) return null;
-        Reservation reservation = ReservationMapper.toEntity(dto, room);
-        return ReservationMapper.toDTO(reservationRepository.save(reservation));
+    public ReservationDTO createReservation(ReservationDTO reservationDTO) {
+        Room room = roomRepository.findById(reservationDTO.getRoomId())
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+        Reservation reservation = ReservationMapper.toEntity(reservationDTO, room);
+        reservation = reservationRepository.save(reservation);
+        return ReservationMapper.toDto(reservation);
     }
 
     @Override
-    public ReservationDTO update(Long id, ReservationDTO dto) {
-        Reservation reservation = reservationRepository.findById(id).orElse(null);
-        Room room = roomRepository.findById(dto.getRoomId()).orElse(null);
-        if (reservation == null || room == null) return null;
-        reservation.setCustomerName(dto.getCustomerName());
-        reservation.setCheckInDate(dto.getCheckInDate());
-        reservation.setCheckOutDate(dto.getCheckOutDate());
-        reservation.setRoom(room);
-        return ReservationMapper.toDTO(reservationRepository.save(reservation));
+    public ReservationDTO updateReservation(Long id, ReservationDTO reservationDTO) {
+        Reservation existingReservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+
+        existingReservation.setCustomerName(reservationDTO.getCustomerName());
+        existingReservation.setCheckInDate(reservationDTO.getCheckInDate());
+        existingReservation.setCheckOutDate(reservationDTO.getCheckOutDate());
+
+        if (reservationDTO.getRoomId() != null &&
+                !reservationDTO.getRoomId().equals(existingReservation.getRoom().getId())) {
+            Room newRoom = roomRepository.findById(reservationDTO.getRoomId())
+                    .orElseThrow(() -> new RuntimeException("Room not found"));
+            existingReservation.setRoom(newRoom);
+        }
+
+        existingReservation = reservationRepository.save(existingReservation);
+        return ReservationMapper.toDto(existingReservation);
     }
 
     @Override
-    public void delete(Long id) {
+    public void deleteReservation(Long id) {
         reservationRepository.deleteById(id);
     }
 }

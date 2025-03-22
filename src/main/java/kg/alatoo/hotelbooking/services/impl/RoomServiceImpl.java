@@ -18,37 +18,36 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
 
     @Override
-    public List<RoomDTO> findAll() {
-        return roomRepository.findAll().stream()
-                .map(RoomMapper::toDTO)
-                .collect(Collectors.toList());
+    public List<RoomDTO> getAllRooms() {
+        List<Room> rooms = roomRepository.findAll();
+        return rooms.stream().map(RoomMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
-    public RoomDTO findById(Long id) {
-        return roomRepository.findById(id)
-                .map(RoomMapper::toDTO)
-                .orElse(null);
+    public RoomDTO getRoomById(Long id) {
+        Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
+        return RoomMapper.toDto(room);
     }
 
     @Override
-    public RoomDTO save(RoomDTO roomDTO) {
+    public RoomDTO createRoom(RoomDTO roomDTO) {
         Room room = RoomMapper.toEntity(roomDTO);
-        return RoomMapper.toDTO(roomRepository.save(room));
+        room = roomRepository.save(room);
+        return RoomMapper.toDto(room);
     }
 
     @Override
-    public RoomDTO update(Long id, RoomDTO roomDTO) {
-        Room room = roomRepository.findById(id).orElse(null);
-        if (room == null) return null;
+    public RoomDTO updateRoom(Long id, RoomDTO roomDTO) {
+        Room room = roomRepository.findById(id).orElseThrow(() -> new RuntimeException("Room not found"));
         room.setNumber(roomDTO.getNumber());
         room.setType(roomDTO.getType());
         room.setStatus(roomDTO.getStatus());
-        return RoomMapper.toDTO(roomRepository.save(room));
+        room = roomRepository.save(room);
+        return RoomMapper.toDto(room);
     }
 
     @Override
-    public void delete(Long id) {
+    public void deleteRoom(Long id) {
         roomRepository.deleteById(id);
     }
 }

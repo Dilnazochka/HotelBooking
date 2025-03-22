@@ -1,6 +1,9 @@
 package kg.alatoo.hotelbooking.entities;
+
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
@@ -8,7 +11,6 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Reservation {
 
     @Id
@@ -16,12 +18,9 @@ public class Reservation {
     private Long id;
 
     private String customerName;
-
     private LocalDate checkInDate;
-
     private LocalDate checkOutDate;
 
     @ManyToOne
-    @JoinColumn(name = "room_id")
     private Room room;
 }

@@ -1,10 +1,11 @@
 package kg.alatoo.hotelbooking.controllers;
 
+import jakarta.validation.Valid;
 import kg.alatoo.hotelbooking.dto.RoomDTO;
 import kg.alatoo.hotelbooking.services.RoomService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 
@@ -15,31 +16,28 @@ public class RoomController {
 
     private final RoomService roomService;
 
-    @GetMapping
-    public List<RoomDTO> getAll() {
-        return roomService.findAll();
+    @GetMapping("/")
+    public List<RoomDTO> getAllRooms() {
+        return roomService.getAllRooms();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoomDTO> getById(@PathVariable Long id) {
-        RoomDTO dto = roomService.findById(id);
-        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
+    public RoomDTO getRoomById(@PathVariable Long id) {
+        return roomService.getRoomById(id);
     }
 
     @PostMapping
-    public ResponseEntity<RoomDTO> create(@RequestBody RoomDTO dto) {
-        return ResponseEntity.ok(roomService.save(dto));
+    public RoomDTO createRoom(@Valid @RequestBody RoomDTO roomDTO) {
+        return roomService.createRoom(roomDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoomDTO> update(@PathVariable Long id, @RequestBody RoomDTO dto) {
-        RoomDTO updated = roomService.update(id, dto);
-        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
+    public RoomDTO updateRoom(@PathVariable Long id, @Valid @RequestBody RoomDTO roomDTO) {
+        return roomService.updateRoom(id, roomDTO);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        roomService.delete(id);
-        return ResponseEntity.noContent().build();
+    public void deleteRoom(@PathVariable Long id) {
+        roomService.deleteRoom(id);
     }
 }

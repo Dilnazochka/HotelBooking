@@ -1,10 +1,15 @@
 package kg.alatoo.hotelbooking.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RoomDTO {
+
     private Long id;
 
     @NotBlank
@@ -16,4 +21,3 @@ public class RoomDTO {
     @NotBlank
     private String status;
 }
-

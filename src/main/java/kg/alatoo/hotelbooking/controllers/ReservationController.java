@@ -1,9 +1,9 @@
 package kg.alatoo.hotelbooking.controllers;
 
+import jakarta.validation.Valid;
 import kg.alatoo.hotelbooking.dto.ReservationDTO;
 import kg.alatoo.hotelbooking.services.ReservationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,32 +15,28 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
-    @GetMapping
-    public List<ReservationDTO> getAll() {
-        return reservationService.findAll();
+    @GetMapping("/")
+    public List<ReservationDTO> getAllReservations() {
+        return reservationService.getAllReservations();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ReservationDTO> getById(@PathVariable Long id) {
-        ReservationDTO dto = reservationService.findById(id);
-        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
+    public ReservationDTO getReservationById(@PathVariable Long id) {
+        return reservationService.getReservationById(id);
     }
 
     @PostMapping
-    public ResponseEntity<ReservationDTO> create(@RequestBody ReservationDTO dto) {
-        ReservationDTO saved = reservationService.save(dto);
-        return saved != null ? ResponseEntity.ok(saved) : ResponseEntity.badRequest().build();
+    public ReservationDTO createReservation(@Valid @RequestBody ReservationDTO reservationDTO) {
+        return reservationService.createReservation(reservationDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ReservationDTO> update(@PathVariable Long id, @RequestBody ReservationDTO dto) {
-        ReservationDTO updated = reservationService.update(id, dto);
-        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
+    public ReservationDTO updateReservation(@PathVariable Long id, @Valid @RequestBody ReservationDTO reservationDTO) {
+        return reservationService.updateReservation(id, reservationDTO);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        reservationService.delete(id);
-        return ResponseEntity.noContent().build();
+    public void deleteReservation(@PathVariable Long id) {
+        reservationService.deleteReservation(id);
     }
 }
