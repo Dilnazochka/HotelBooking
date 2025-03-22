@@ -9,20 +9,24 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ReservationMapperTest {
+public class ReservationMapperTest {
 
     @Test
-    void toDTO_shouldMapEntityToDTO() {
-        Room room = Room.builder().id(1L).build();
-        Reservation reservation = Reservation.builder()
-                .id(2L)
-                .customerName("John")
-                .checkInDate(LocalDate.now())
-                .checkOutDate(LocalDate.now().plusDays(1))
-                .room(room)
-                .build();
+    public void testToDto() {
+        Room room = new Room();
+        room.setId(1L);
+        room.setNumber("101");
+        room.setType("Single");
+        room.setStatus("Available");
 
-        ReservationDTO dto = ReservationMapper.toDTO(reservation);
+        Reservation reservation = new Reservation();
+        reservation.setId(10L);
+        reservation.setRoom(room);
+        reservation.setCustomerName("John Doe");
+        reservation.setCheckInDate(LocalDate.of(2024, 5, 1));
+        reservation.setCheckOutDate(LocalDate.of(2024, 5, 5));
+
+        ReservationDTO dto = ReservationMapper.toDto(reservation);
 
         assertEquals(reservation.getId(), dto.getId());
         assertEquals(reservation.getCustomerName(), dto.getCustomerName());
@@ -32,21 +36,26 @@ class ReservationMapperTest {
     }
 
     @Test
-    void toEntity_shouldMapDTOToEntity() {
-        ReservationDTO dto = new ReservationDTO();
-        dto.setId(2L);
-        dto.setCustomerName("John");
-        dto.setCheckInDate(LocalDate.now());
-        dto.setCheckOutDate(LocalDate.now().plusDays(1));
-        dto.setRoomId(1L);
+    public void testToEntity() {
+        Room room = new Room();
+        room.setId(1L);
+        room.setNumber("101");
+        room.setType("Single");
+        room.setStatus("Available");
 
-        Room room = Room.builder().id(1L).build();
+        ReservationDTO dto = new ReservationDTO();
+        dto.setId(10L);
+        dto.setRoomId(1L);
+        dto.setCustomerName("John Doe");
+        dto.setCheckInDate(LocalDate.of(2024, 5, 1));
+        dto.setCheckOutDate(LocalDate.of(2024, 5, 5));
+
         Reservation reservation = ReservationMapper.toEntity(dto, room);
 
         assertEquals(dto.getId(), reservation.getId());
         assertEquals(dto.getCustomerName(), reservation.getCustomerName());
         assertEquals(dto.getCheckInDate(), reservation.getCheckInDate());
         assertEquals(dto.getCheckOutDate(), reservation.getCheckOutDate());
-        assertEquals(dto.getRoomId(), reservation.getRoom().getId());
+        assertEquals(room, reservation.getRoom());
     }
 }

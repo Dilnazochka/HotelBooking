@@ -3,21 +3,19 @@ package kg.alatoo.hotelbooking.mappers;
 import kg.alatoo.hotelbooking.dto.RoomDTO;
 import kg.alatoo.hotelbooking.entities.Room;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-class RoomMapperTest {
+public class RoomMapperTest {
 
     @Test
-    void toDTO_shouldMapEntityToDTO() {
-        Room room = Room.builder()
-                .id(1L)
-                .number("101")
-                .type("Single")
-                .status("Available")
-                .build();
+    public void testToDto() {
+        Room room = new Room();
+        room.setId(1L);
+        room.setNumber("101");
+        room.setType("Single");
+        room.setStatus("Available");
 
-        RoomDTO dto = RoomMapper.toDTO(room);
+        RoomDTO dto = RoomMapper.toDto(room);
 
         assertEquals(room.getId(), dto.getId());
         assertEquals(room.getNumber(), dto.getNumber());
@@ -26,7 +24,7 @@ class RoomMapperTest {
     }
 
     @Test
-    void toEntity_shouldMapDTOToEntity() {
+    public void testToEntity() {
         RoomDTO dto = new RoomDTO();
         dto.setId(1L);
         dto.setNumber("101");
