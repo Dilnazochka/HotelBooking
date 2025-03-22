@@ -2,24 +2,23 @@ package kg.alatoo.hotelbooking.services.impl;
 
 import kg.alatoo.hotelbooking.dto.RoomDTO;
 import kg.alatoo.hotelbooking.entities.Room;
-import kg.alatoo.hotelbooking.mappers.RoomMapper;
 import kg.alatoo.hotelbooking.repositories.RoomRepository;
+import kg.alatoo.hotelbooking.services.RoomService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class RoomServiceImplTest {
+public class RoomServiceImplTest {
 
     @Mock
     private RoomRepository roomRepository;
@@ -27,66 +26,68 @@ class RoomServiceImplTest {
     @InjectMocks
     private RoomServiceImpl roomService;
 
-    private Room room;
-    private RoomDTO roomDTO;
-
     @BeforeEach
-    void setUp() {
-        room = Room.builder()
-                .id(1L)
-                .number("101")
-                .type("Single")
-                .status("Available")
-                .build();
-
-        roomDTO = RoomMapper.toDTO(room);
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void findAll_shouldReturnListOfRooms() {
-        when(roomRepository.findAll()).thenReturn(Arrays.asList(room));
+    public void testGetAllRooms() {
+        Room room1 = new Room(1L, "101", "Single", "Available");
+        Room room2 = new Room(2L, "102", "Double", "Occupied");
 
-        List<RoomDTO> result = roomService.findAll();
+        when(roomRepository.findAll()).thenReturn(Arrays.asList(room1, room2));
 
-        assertEquals(1, result.size());
-        assertEquals("101", result.get(0).getNumber());
+        List<RoomDTO> rooms = roomService.getAllRooms();
+        assertEquals(2, rooms.size());
+        assertEquals("101", rooms.get(0).getNumber());
+        verify(roomRepository, times(1)).findAll();
     }
 
     @Test
-    void findById_shouldReturnRoom() {
+    public void testGetRoomById() {
+        Room room = new Room(1L, "101", "Single", "Available");
         when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
 
-        RoomDTO result = roomService.findById(1L);
-
-        assertNotNull(result);
-        assertEquals("101", result.getNumber());
+        RoomDTO roomDTO = roomService.getRoomById(1L);
+        assertNotNull(roomDTO);
+        assertEquals("101", roomDTO.getNumber());
+        verify(roomRepository, times(1)).findById(1L);
     }
 
     @Test
-    void save_shouldReturnSavedRoom() {
-        when(roomRepository.save(any(Room.class))).thenReturn(room);
+    public void testCreateRoom() {
+        RoomDTO roomDTO = new RoomDTO(null, "103", "Suite", "Available");
+        Room room = new Room(null, "103", "Suite", "Available");
+        Room savedRoom = new Room(3L, "103", "Suite", "Available");
 
-        RoomDTO result = roomService.save(roomDTO);
+        when(roomRepository.save(any(Room.class))).thenReturn(savedRoom);
 
+        RoomDTO result = roomService.createRoom(roomDTO);
         assertNotNull(result);
-        assertEquals("101", result.getNumber());
+        assertEquals(3L, result.getId());
+        verify(roomRepository, times(1)).save(any(Room.class));
     }
 
     @Test
-    void update_shouldReturnUpdatedRoom() {
-        when(roomRepository.findById(1L)).thenReturn(Optional.of(room));
-        when(roomRepository.save(any(Room.class))).thenReturn(room);
+    public void testUpdateRoom() {
+        Room existingRoom = new Room(1L, "101", "Single", "Available");
+        RoomDTO roomDTO = new RoomDTO(null, "101", "Deluxe", "Available");
 
-        roomDTO.setStatus("Occupied");
-        RoomDTO result = roomService.update(1L, roomDTO);
+        when(roomRepository.findById(1L)).thenReturn(Optional.of(existingRoom));
+        when(roomRepository.save(existingRoom)).thenReturn(existingRoom);
 
-        assertNotNull(result);
-        assertEquals("Occupied", result.getStatus());
+        RoomDTO updatedRoom = roomService.updateRoom(1L, roomDTO);
+        assertNotNull(updatedRoom);
+        assertEquals("Deluxe", updatedRoom.getType());
+        verify(roomRepository, times(1)).findById(1L);
+        verify(roomRepository, times(1)).save(existingRoom);
     }
 
     @Test
-    void delete_shouldInvokeRepositoryDelete() {
-        roomService.delete(1L);
+    public void testDeleteRoom() {
+        doNothing().when(roomRepository).deleteById(1L);
+        roomService.deleteRoom(1L);
         verify(roomRepository, times(1)).deleteById(1L);
     }
 }

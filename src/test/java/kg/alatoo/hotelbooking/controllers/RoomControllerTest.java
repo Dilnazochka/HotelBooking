@@ -1,58 +1,78 @@
 package kg.alatoo.hotelbooking.controllers;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kg.alatoo.hotelbooking.dto.RoomDTO;
 import kg.alatoo.hotelbooking.services.RoomService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
-class RoomControllerTest {
+@WebMvcTest(RoomController.class)
+public class RoomControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private RoomService roomService;
 
-    @InjectMocks
-    private RoomController roomController;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    private RoomDTO roomDTO;
+    @Test
+    public void testGetAllRooms() throws Exception {
+        RoomDTO room1 = new RoomDTO();
+        room1.setId(1L);
+        room1.setNumber("101");
+        room1.setType("Single");
+        room1.setStatus("Available");
 
-    @BeforeEach
-    void setUp() {
-        roomDTO = new RoomDTO();
-        roomDTO.setId(1L);
-        roomDTO.setNumber("101");
-        roomDTO.setType("Single");
+        RoomDTO room2 = new RoomDTO();
+        room2.setId(2L);
+        room2.setNumber("102");
+        room2.setType("Double");
+        room2.setStatus("Occupied");
+
+        Mockito.when(roomService.getAllRooms()).thenReturn(Arrays.asList(room1, room2));
+
+        mockMvc.perform(get("/api/rooms/"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].number").value("101"))
+                .andExpect(jsonPath("$[1].id").value(2L))
+                .andExpect(jsonPath("$[1].number").value("102"));
+    }
+
+    @Test
+    public void testCreateRoom() throws Exception {
+        RoomDTO roomDTO = new RoomDTO();
+        roomDTO.setNumber("103");
+        roomDTO.setType("Suite");
         roomDTO.setStatus("Available");
-    }
 
-    @Test
-    void getAllRooms_shouldReturnRoomList() {
-        when(roomService.findAll()).thenReturn(Collections.singletonList(roomDTO));
+        RoomDTO savedRoom = new RoomDTO();
+        savedRoom.setId(3L);
+        savedRoom.setNumber("103");
+        savedRoom.setType("Suite");
+        savedRoom.setStatus("Available");
 
-        List<RoomDTO> result = roomController.getAll();
+        Mockito.when(roomService.createRoom(any(RoomDTO.class))).thenReturn(savedRoom);
 
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("101", result.get(0).getNumber());
-    }
-
-    @Test
-    void createRoom_shouldReturnSavedRoom() {
-        when(roomService.save(roomDTO)).thenReturn(roomDTO);
-
-        var response = roomController.create(roomDTO);
-
-        assertNotNull(response.getBody());
-        assertEquals("101", response.getBody().getNumber());
-        assertTrue(response.getStatusCode().is2xxSuccessful());
+        mockMvc.perform(post("/api/rooms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(roomDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(3L))
+                .andExpect(jsonPath("$.number").value("103"));
     }
 }
