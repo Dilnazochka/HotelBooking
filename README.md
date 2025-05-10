@@ -4,6 +4,13 @@
 
 This is a Hotel Booking system built with Spring Boot. It includes user registration, login (including OAuth2 with Google and GitHub), JWT-based authentication, protected endpoints, Swagger documentation, and a basic frontend with Thymeleaf.
 
+
+the link for the video demonstration of the project
+ since I was shooting on loom, could not download and upload and upload to YouTube.
+Thanks for understanding☺️🙌
+
+https://www.loom.com/share/200d1857608744e7a67732581d891451?sid=da56c111-c363-488f-b841-623eca15f624
+
 ---
 
 ## ⚙️ Technologies Used
